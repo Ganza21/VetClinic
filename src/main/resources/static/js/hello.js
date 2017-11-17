@@ -1,24 +1,21 @@
-var AppComponent = ng.core.Component({
-    selector: 'app',
-    template: '<p>The ID is {{greeting.id}}</p><p>The content is {{greeting.content}}</p>'
-}).Class({
-    constructor: [ng.http.Http, function (http) {
-        var self = this;
-        self.greeting = {id: '', content: ''};
-        http.get("/resource").subscribe(response => self.greeting = response.json());
-    }]
-});
+var AppService = ng.core.Injectable({}).Class({constructor: [ng.http.Http, function(http) {
 
-var AppModule = ng.core.NgModule({
-    imports: [ng.platformBrowser.BrowserModule, ng.http.HttpModule],
-    declarations: [AppComponent],
-    bootstrap: [AppComponent]
-}).Class({
-    constructor: function () {
+    var self = this;
+    this.authenticated = false;
+    this.authenticate = function(credentials, callback) {
+
+        var headers = credentials ? {
+            authorization : "Basic " + btoa(credentials.username + ":" + credentials.password)
+        } : {};
+        http.get('user', {headers: headers}).subscribe(function(response) {
+            if (response.json().name) {
+                self.authenticated = true;
+            } else {
+                self.authenticated = false;
+            }
+            callback && callback();
+        });
+
     }
-})
 
-
-document.addEventListener('DOMContentLoaded', function () {
-    ng.platformBrowserDynamic.platformBrowserDynamic().bootstrapModule(AppModule);
-});
+}]})
